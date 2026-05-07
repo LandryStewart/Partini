@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍸 Cocktail Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Poppins',sans-serif;background:#000;color:#eee;min-height:100vh;}
+        header{background:linear-gradient(135deg,#0a0a0a,#111);text-align:center;padding:36px 20px 28px;border-bottom:3px solid #e2b340;}
+        header h1{font-size:2.4rem;color:#e2b340;letter-spacing:1px;}
+        header p{margin-top:6px;font-weight:300;color:#999;font-size:1rem;}
+        .container{max-width:1200px;margin:0 auto;padding:28px 20px 60px;}
+        .step{margin-bottom:28px;}
+        .step-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+        .step-num{background:#e2b340;color:#000;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;}
+        .step-header h2{font-size:1.2rem;font-weight:600;color:#ccc;}
+        .spirits-grid{display:flex;flex-wrap:wrap;gap:12px;}
+        .spirit-btn{background:#111;border:2px solid #222;border-radius:12px;padding:14px 18px;cursor:pointer;text-align:center;transition:all .25s;min-width:100px;user-select:none;}
+        .spirit-btn:hover{border-color:#e2b340;background:#1a1a1a;}
+        .spirit-btn.active{border-color:#e2b340;background:#1a1a00;box-shadow:0 0 14px rgba(226,179,64,.25);}
+        .spirit-btn .emoji{font-size:1.6rem;display:block;margin-bottom:4px;}
+        .spirit-btn .label{font-size:.82rem;font-weight:500;color:#aaa;}
+        .spirit-btn.active .label{color:#e2b340;}
+        .ing-section{background:#111;border-radius:14px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.6);border:1px solid #1a1a1a;}
+        .tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #222;}
+        .tab-btn{padding:10px 22px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:500;color:#666;background:none;border:none;border-bottom:3px solid transparent;transition:all .25s;}
+        .tab-btn:hover{color:#bbb;}
+        .tab-btn.active{color:#e2b340;border-bottom-color:#e2b340;}
+        .tab-content{display:none;}.tab-content.active{display:block;}
+        .cat-group{margin-bottom:18px;}
+        .cat-title{font-size:.85rem;font-weight:600;color:#e2b340;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+        .chips{display:flex;flex-wrap:wrap;gap:8px;}
+        .chip{background:#0a0a0a;border:1.5px solid #222;border-radius:20px;padding:6px 14px;font-size:.82rem;color:#999;cursor:pointer;transition:all .2s;user-select:none;}
+        .chip:hover{border-color:#e2b340;color:#ddd;}
+        .chip.active{background:#1a1a00;border-color:#e2b340;color:#e2b340;}
+        .search-wrap{position:relative;max-width:500px;}
+        .search-wrap input{width:100%;padding:12px 18px;border-radius:8px;border:2px solid #222;background:#0a0a0a;color:#eee;font-family:'Poppins',sans-serif;font-size:1rem;outline:none;transition:border-color .25s;}
+        .search-wrap input:focus{border-color:#e2b340;}
+        .search-wrap input::placeholder{color:#444;}
+        .autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#111;border:1px solid #222;border-radius:0 0 8px 8px;max-height:260px;overflow-y:auto;z-index:100;display:none;}
+        .autocomplete-list .ac-item{padding:10px 18px;cursor:pointer;font-size:.9rem;color:#aaa;transition:background .15s;}
+        .autocomplete-list .ac-item:hover{background:#1a1a1a;color:#e2b340;}
+        .autocomplete-list .ac-item.already{color:#444;font-style:italic;}
+        .selected-bar{background:#0a0a0a;border:2px solid #1a1a1a;border-radius:12px;padding:16px 20px;margin:24px 0;min-height:56px;}
+        .selected-label{font-size:.82rem;color:#666;margin-bottom:8px;font-weight:500;}
+        .selected-tags{display:flex;flex-wrap:wrap;gap:8px;}
+        .sel-tag{background:#1a1a00;border:1px solid #e2b340;color:#e2b340;padding:5px 12px;border-radius:18px;font-size:.82rem;display:flex;align-items:center;gap:6px;animation:fadeIn .3s;}
+        .sel-tag .remove{cursor:pointer;font-weight:700;font-size:.95rem;transition:color .2s;}
+        .sel-tag .remove:hover{color:#e74c3c;}
+        .no-ing{color:#444;font-size:.88rem;font-style:italic;}
+        .btn{padding:12px 22px;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .25s,transform .15s;}
+        .btn:active{transform:scale(.97);}
+        .action-row{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;}
+        .btn-find{background:#e2b340;color:#000;padding:14px 32px;font-size:1.05rem;position:relative;}
+        .btn-find:hover{background:#f0c24d;}
+        .btn-find .badge{position:absolute;top:-8px;right:-8px;background:#e74c3c;color:#fff;font-size:.72rem;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
+        .btn-clear{background:#c0392b;color:#fff;}
+        .btn-clear:hover{background:#e74c3c;}
+        .spinner-wrap{text-align:center;padding:50px 0;display:none;}
+        .spinner{width:50px;height:50px;border:5px solid #111;border-top:5px solid #e2b340;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes modalIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+        .main-section-title{font-size:1.5rem;font-weight:700;margin:36px 0 8px;padding-bottom:8px;border-bottom:3px solid #e2b340;display:flex;align-items:center;gap:10px;color:#eee;}
+        .main-section-title .icon{font-size:1.5rem;}
+        .flavor-section{margin:18px 0;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;background:#0a0a0a;}
+        .flavor-header{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;user-select:none;transition:background .2s;}
+        .flavor-header:hover{background:#111;}
+        .flavor-header .fl-emoji{font-size:1.3rem;}
+        .flavor-header .fl-title{font-size:1.05rem;font-weight:600;color:#e2b340;flex:1;}
+        .flavor-header .fl-count{font-size:.82rem;color:#666;margin-right:8px;}
+        .flavor-header .fl-arrow{font-size:1rem;color:#666;transition:transform .3s;}
+        .flavor-header .fl-arrow.open{transform:rotate(180deg);}
+        .flavor-body{padding:0 16px 16px;}
+        .flavor-body.collapsed{display:none;}
+        .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;padding-top:8px;}
+        .card{background:#141414;border-radius:14px;overflow:hidden;border:1px solid #1e1e1e;animation:fadeIn .4s;transition:transform .25s,border-color .25s;cursor:pointer;}
+        .card:hover{transform:translateY(-4px);border-color:#e2b340;}
+        .card img{width:100%;height:180px;object-fit:cover;}
+        .card-body{padding:14px;}
+        .card-body h3{color:#e2b340;font-size:1rem;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .card-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+        .flavor-badge{font-size:.85rem;}
+        .diff-badge{font-size:.72rem;padding:2px 9px;border-radius:10px;font-weight:600;}
+        .badge-easy{background:#27ae60;color:#fff;}
+        .badge-medium{background:#e2b340;color:#000;}
+        .badge-advanced{background:#e74c3c;color:#fff;}
+        .ing-count{font-size:.78rem;color:#666;margin-left:auto;}
+        .no-results{text-align:center;padding:40px 20px;color:#555;font-size:1.05rem;}
+        /* ── Modal ── */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.88);z-index:1000;justify-content:center;align-items:center;padding:20px;}
+        .modal-overlay.open{display:flex;}
+        .modal-card{background:#141414;border:1px solid #222;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn .3s ease;}
+        .modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);color:#eee;border:none;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:background .2s;}
+        .modal-close:hover{background:#e74c3c;}
+        .modal-img{width:100%;height:280px;object-fit:cover;border-radius:16px 16px 0 0;}
+        .modal-body{padding:24px;}
+        .modal-body h2{color:#e2b340;font-size:1.4rem;margin-bottom:4px;}
+        .modal-meta{font-size:.85rem;color:#666;margin-bottom:14px;}
+        .modal-meta span{margin-right:12px;}
+        .modal-body h4{font-size:.95rem;color:#ccc;margin:16px 0 8px;border-bottom:1px solid #222;padding-bottom:6px;}
+        .modal-ingredients{list-style:none;margin-bottom:6px;}
+        .modal-ingredients li{font-size:.9rem;padding:4px 0;color:#bbb;}
+        .modal-ingredients li::before{content:"• ";color:#e2b340;}
+        .modal-ingredients li.missing{color:#e74c3c;font-style:italic;}
+        .modal-ingredients li.missing::before{content:"✗ ";color:#e74c3c;}
+        .modal-steps{list-style:none;counter-reset:step;}
+        .modal-steps li{counter-increment:step;padding:6px 0;font-size:.88rem;color:#bbb;line-height:1.6;display:flex;gap:10px;}
+        .modal-steps li::before{content:counter(step);background:#e2b340;color:#000;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;margin-top:2px;}
+        @media(max-width:600px){
+            header h1{font-size:1.7rem;}
+            .cards{grid-template-columns:1fr;}
+            .spirit-btn{min-width:80px;padding:10px 12px;}
+            .spirit-btn .emoji{font-size:1.3rem;}
+            .modal-card{max-width:95%;}
+            .modal-img{height:200px;}
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🍸 Cocktail Finder</h1>
+    <p>Pick your spirits, choose your ingredients, and discover what you can mix!</p>
+</header>
+
+<div class="container">
+
+    <!-- STEP 1: Spirits -->
+    <div class="step">
+        <div class="step-header">
+            <div class="step-num">1</div>
+            <h2>Choose Your Base Spirit(s)</h2>
+        </div>
+        <div class="spirits-grid" id="spiritsGrid"></div>
+    </div>
+
+    <!-- STEP 2: Ingredients -->
+    <div class="step">
+        <div class="step-header">
+            <div class="step-num">2</div>
+            <h2>Add Your Ingredients</h2>
+        </div>
+        <div class="ing-section">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('browse')">📋 Browse &amp; Select</button>
+                <button class="tab-btn" onclick="switchTab('search')">🔎 Type to Search</button>
+            </div>
+            <div class="tab-content active" id="tab-browse"></div>
+            <div class="tab-content" id="tab-search">
+                <p style="font-size:.88rem;color:#666;margin-bottom:12px;">Start typing — suggestions from the database will appear.</p>
+                <div class="search-wrap">
+                    <input type="text" id="searchInput" placeholder="e.g. Elderflower, Passion Fruit…" autocomplete="off">
+                    <div class="autocomplete-list" id="acList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Summary -->
+    <div class="selected-bar">
+        <div class="selected-label">🧾 Selected Ingredients</div>
+        <div class="selected-tags" id="selectedTags"><span class="no-ing">None selected yet — pick some above!</span></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+        <button class="btn btn-find" id="findBtn" onclick="findCocktails()">🔍 Find Cocktails <span class="badge" id="countBadge" style="display:none">0</span></button>
+        <button class="btn btn-clear" onclick="clearAll()">🗑️ Clear All</button>
+    </div>
+
+    <div class="spinner-wrap" id="spinner">
+        <div class="spinner"></div>
+        <p>Searching cocktail recipes…</p>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-card" id="modalCard">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   HARDCODED LOCAL COCKTAIL DATABASE
+   ═══════════════════════════════════════ */
+const LOCAL_DB = [
+  // ── VODKA ──
+  {name:"Vodka Soda",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Club Soda",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 2 oz vodka over the ice.","Top with 4 oz club soda.","Squeeze a lime wedge into the glass and drop it in.","Give it a gentle stir and serve."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Vodka Tonic",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Tonic Water",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 2 oz vodka over the ice.","Top with 4 oz tonic water.","Squeeze a lime wedge over the drink and drop it in.","Stir gently and serve."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Cape Codder (Vodka Cranberry)",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Cranberry Juice",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 2 oz vodka over the ice.","Add 4 oz cranberry juice.","Squeeze a lime wedge and drop it in.","Stir gently and serve."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Screwdriver",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Orange Juice",measure:"4 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz vodka over the ice.","Top with 4 oz fresh orange juice.","Stir gently and garnish with an orange slice."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Greyhound",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Grapefruit Juice",measure:"4 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz vodka over the ice.","Top with 4 oz fresh grapefruit juice.","Stir gently and garnish with a grapefruit wedge."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Moscow Mule",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Ginger Beer",measure:"4 oz"},{name:"Lime Juice",measure:"0.5 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a copper mug or highball glass with ice.","Pour 2 oz vodka over the ice.","Add 0.5 oz fresh lime juice.","Top with 4 oz ginger beer.","Stir gently, garnish with a lime wedge, and serve."],glass:"Copper Mug",category:"Mule",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Cosmopolitan",ingredients:[{name:"Vodka",measure:"1.5 oz"},{name:"Triple Sec",measure:"1 oz"},{name:"Cranberry Juice",measure:"1 oz"},{name:"Lime Juice",measure:"0.5 oz"}],steps:["Add vodka, triple sec, cranberry juice, and lime juice to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into a chilled cocktail glass.","Garnish with a lime wheel or orange twist."],glass:"Cocktail Glass",category:"Cocktail",flavor:"citrus",difficulty:"Medium",img:""},
+  {name:"Black Russian",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Kahlua",measure:"1 oz"}],steps:["Fill an old fashioned glass with ice.","Pour 2 oz vodka over the ice.","Add 1 oz Kahlua.","Stir gently and serve."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Easy",img:""},
+  {name:"White Russian",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Kahlua",measure:"1 oz"},{name:"Cream",measure:"1 oz"}],steps:["Fill an old fashioned glass with ice.","Pour 2 oz vodka over the ice.","Add 1 oz Kahlua and stir.","Float 1 oz heavy cream on top by pouring over the back of a spoon.","Stir if desired and serve."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"creamy",difficulty:"Easy",img:""},
+  {name:"Espresso Martini",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Kahlua",measure:"0.5 oz"},{name:"Espresso",measure:"1 oz"},{name:"Simple Syrup",measure:"0.5 oz"}],steps:["Brew 1 oz of espresso and let it cool slightly.","Add vodka, Kahlua, espresso, and simple syrup to a shaker with ice.","Shake hard for 15 seconds until frothy.","Strain into a chilled martini glass.","Garnish with 3 coffee beans on top of the foam."],glass:"Martini Glass",category:"Cocktail",flavor:"bold",difficulty:"Medium",img:""},
+  {name:"Lemon Drop",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Triple Sec",measure:"0.5 oz"},{name:"Lemon Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.75 oz"}],steps:["Rim a chilled martini glass with sugar.","Add vodka, triple sec, lemon juice, and simple syrup to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into the prepared glass.","Garnish with a lemon twist."],glass:"Martini Glass",category:"Cocktail",flavor:"citrus",difficulty:"Medium",img:""},
+  // ── GIN ──
+  {name:"Gin and Tonic",ingredients:[{name:"Gin",measure:"2 oz"},{name:"Tonic Water",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 2 oz gin over the ice.","Top with 4 oz tonic water.","Squeeze a lime wedge into the glass and drop it in.","Stir gently and serve."],glass:"Highball Glass",category:"Highball",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Gin Fizz",ingredients:[{name:"Gin",measure:"2 oz"},{name:"Lemon Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.75 oz"},{name:"Club Soda",measure:"2 oz"}],steps:["Add gin, lemon juice, and simple syrup to a shaker with ice.","Shake vigorously for 10 seconds.","Strain into a highball glass filled with fresh ice.","Top with 2 oz club soda.","Stir gently and garnish with a lemon wheel."],glass:"Highball Glass",category:"Fizz",flavor:"bubbly",difficulty:"Medium",img:""},
+  {name:"Tom Collins",ingredients:[{name:"Gin",measure:"2 oz"},{name:"Lemon Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.75 oz"},{name:"Club Soda",measure:"3 oz"}],steps:["Add gin, lemon juice, and simple syrup to a shaker with ice.","Shake well for 10 seconds.","Strain into a Collins glass filled with fresh ice.","Top with 3 oz club soda.","Garnish with a lemon wheel and maraschino cherry."],glass:"Collins Glass",category:"Cocktail",flavor:"bubbly",difficulty:"Medium",img:""},
+  {name:"Gimlet",ingredients:[{name:"Gin",measure:"2.5 oz"},{name:"Lime Juice",measure:"0.75 oz"},{name:"Simple Syrup",measure:"0.75 oz"}],steps:["Add gin, lime juice, and simple syrup to a shaker with ice.","Shake well for 10–15 seconds.","Strain into a chilled coupe or martini glass.","Garnish with a lime wheel."],glass:"Coupe Glass",category:"Cocktail",flavor:"citrus",difficulty:"Easy",img:""},
+  {name:"Negroni",ingredients:[{name:"Gin",measure:"1 oz"},{name:"Campari",measure:"1 oz"},{name:"Sweet Vermouth",measure:"1 oz"}],steps:["Add gin, Campari, and sweet vermouth to a mixing glass with ice.","Stir for 20–30 seconds until well chilled.","Strain into an old fashioned glass over a large ice cube.","Garnish with an orange peel twist."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Easy",img:""},
+  {name:"French 75",ingredients:[{name:"Gin",measure:"1.5 oz"},{name:"Lemon Juice",measure:"0.75 oz"},{name:"Simple Syrup",measure:"0.5 oz"},{name:"Champagne",measure:"3 oz"}],steps:["Add gin, lemon juice, and simple syrup to a shaker with ice.","Shake well for 10 seconds.","Strain into a champagne flute.","Top with 3 oz champagne.","Garnish with a lemon twist."],glass:"Champagne Flute",category:"Cocktail",flavor:"bubbly",difficulty:"Medium",img:""},
+  {name:"Bee's Knees",ingredients:[{name:"Gin",measure:"2 oz"},{name:"Lemon Juice",measure:"0.75 oz"},{name:"Honey",measure:"0.75 oz"}],steps:["Make honey syrup by mixing equal parts honey and warm water. Let cool.","Add gin, lemon juice, and 0.75 oz honey syrup to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into a chilled coupe glass.","Garnish with a lemon twist."],glass:"Coupe Glass",category:"Cocktail",flavor:"citrus",difficulty:"Medium",img:""},
+  {name:"Last Word",ingredients:[{name:"Gin",measure:"0.75 oz"},{name:"Green Chartreuse",measure:"0.75 oz"},{name:"Maraschino Liqueur",measure:"0.75 oz"},{name:"Lime Juice",measure:"0.75 oz"}],steps:["Add gin, Green Chartreuse, maraschino liqueur, and lime juice to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into a chilled coupe glass.","Garnish with a lime wheel or brandied cherry."],glass:"Coupe Glass",category:"Cocktail",flavor:"herbal",difficulty:"Advanced",img:""},
+  // ── WHISKEY / BOURBON ──
+  {name:"Whiskey Sour",ingredients:[{name:"Whiskey",measure:"2 oz"},{name:"Lemon Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.75 oz"},{name:"Egg White",measure:"1 (optional)"}],steps:["Add whiskey, lemon juice, simple syrup, and egg white (if using) to a shaker WITHOUT ice.","Dry shake vigorously for 15 seconds to froth the egg white.","Add ice to the shaker and shake again for 10–15 seconds.","Strain into an old fashioned glass over a large ice cube.","Garnish with an orange peel and a cherry."],glass:"Old Fashioned Glass",category:"Sour",flavor:"citrus",difficulty:"Medium",img:""},
+  {name:"Whiskey Ginger",ingredients:[{name:"Whiskey",measure:"2 oz"},{name:"Ginger Ale",measure:"4 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz whiskey over the ice.","Top with 4 oz ginger ale.","Stir gently and garnish with a lime wedge."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Old Fashioned",ingredients:[{name:"Bourbon",measure:"2 oz"},{name:"Sugar",measure:"1 cube"},{name:"Angostura Bitters",measure:"3 dashes"},{name:"Water",measure:"1 tsp"},{name:"Orange",measure:"1 peel"}],steps:["Place one sugar cube in an old fashioned glass.","Add 3 dashes of Angostura bitters and 1 tsp water.","Muddle until the sugar is dissolved.","Add a large ice cube to the glass.","Pour 2 oz bourbon over the ice.","Stir gently for 20 seconds.","Express an orange peel over the glass and drop it in.","Optionally garnish with a cherry."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Medium",img:""},
+  {name:"Manhattan",ingredients:[{name:"Whiskey",measure:"2 oz"},{name:"Sweet Vermouth",measure:"1 oz"},{name:"Angostura Bitters",measure:"2 dashes"}],steps:["Add whiskey, sweet vermouth, and bitters to a mixing glass with ice.","Stir for 20–30 seconds until well chilled.","Strain into a chilled coupe or martini glass.","Garnish with a brandied cherry."],glass:"Coupe Glass",category:"Cocktail",flavor:"bold",difficulty:"Medium",img:""},
+  {name:"Mint Julep",ingredients:[{name:"Bourbon",measure:"2.5 oz"},{name:"Mint",measure:"8 leaves"},{name:"Sugar",measure:"0.5 oz"},{name:"Water",measure:"1 splash"}],steps:["Place mint leaves and sugar in a julep cup or old fashioned glass.","Add a splash of water and muddle gently to release the mint oils.","Pack the glass with crushed ice.","Pour 2.5 oz bourbon over the ice.","Stir until the outside of the glass frosts.","Top with more crushed ice and garnish with a mint sprig."],glass:"Julep Cup",category:"Cocktail",flavor:"herbal",difficulty:"Medium",img:""},
+  {name:"Boulevardier",ingredients:[{name:"Bourbon",measure:"1.5 oz"},{name:"Campari",measure:"1 oz"},{name:"Sweet Vermouth",measure:"1 oz"}],steps:["Add bourbon, Campari, and sweet vermouth to a mixing glass with ice.","Stir for 20–30 seconds.","Strain into an old fashioned glass over a large ice cube.","Garnish with an orange twist."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Medium",img:""},
+  {name:"Sazerac",ingredients:[{name:"Rye Whiskey",measure:"2 oz"},{name:"Absinthe",measure:"1 rinse"},{name:"Sugar",measure:"1 cube"},{name:"Peychauds Bitters",measure:"3 dashes"},{name:"Water",measure:"1 tsp"}],steps:["Rinse a chilled old fashioned glass with absinthe, swirl to coat, and discard excess.","In a mixing glass, muddle the sugar cube with Peychauds bitters and a teaspoon of water.","Add rye whiskey and ice to the mixing glass.","Stir for 20–30 seconds until well chilled.","Strain into the absinthe-rinsed glass (no ice).","Garnish with a lemon peel twist — express oils over the drink, then discard or drop in."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Advanced",img:""},
+  {name:"Irish Coffee",ingredients:[{name:"Whiskey",measure:"1.5 oz"},{name:"Coffee",measure:"6 oz"},{name:"Sugar",measure:"1 tsp"},{name:"Cream",measure:"1.5 oz"}],steps:["Brew 6 oz of hot coffee.","Pour into an Irish coffee glass or mug.","Add 1 tsp sugar and stir until dissolved.","Add 1.5 oz Irish whiskey and stir.","Float cream on top by pouring slowly over the back of a spoon.","Serve immediately — do not stir the cream in."],glass:"Irish Coffee Glass",category:"Hot Cocktail",flavor:"creamy",difficulty:"Easy",img:""},
+  {name:"Hot Toddy",ingredients:[{name:"Whiskey",measure:"2 oz"},{name:"Honey",measure:"1 tbsp"},{name:"Lemon Juice",measure:"0.75 oz"},{name:"Hot Water",measure:"6 oz"}],steps:["Add honey and lemon juice to a mug.","Pour in 2 oz whiskey.","Top with 6 oz hot water.","Stir until honey is fully dissolved.","Garnish with a lemon wheel and cinnamon stick.","Serve hot."],glass:"Mug",category:"Hot Cocktail",flavor:"herbal",difficulty:"Easy",img:""},
+  {name:"Penicillin",ingredients:[{name:"Scotch",measure:"2 oz"},{name:"Lemon Juice",measure:"0.75 oz"},{name:"Honey",measure:"0.75 oz"},{name:"Ginger",measure:"3 slices"}],steps:["Muddle 3 slices of fresh ginger in a shaker.","Add scotch, lemon juice, and honey syrup (equal parts honey and water).","Add ice and shake vigorously for 15 seconds.","Double strain into an old fashioned glass over a large ice cube.","Optionally float 0.25 oz of Islay scotch on top.","Garnish with a candied ginger piece."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"citrus",difficulty:"Advanced",img:""},
+  // ── RUM ──
+  {name:"Rum and Coke (Cuba Libre)",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Cola",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 2 oz rum over the ice.","Top with 4 oz cola.","Squeeze a lime wedge into the glass and drop it in.","Stir gently and serve."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Daiquiri",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Lime Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.75 oz"}],steps:["Add rum, lime juice, and simple syrup to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into a chilled coupe glass.","Garnish with a lime wheel."],glass:"Coupe Glass",category:"Cocktail",flavor:"citrus",difficulty:"Easy",img:""},
+  {name:"Mojito",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Mint",measure:"8 leaves"},{name:"Lime Juice",measure:"1 oz"},{name:"Sugar",measure:"0.75 oz"},{name:"Club Soda",measure:"2 oz"}],steps:["Place mint leaves and sugar in a glass.","Muddle gently to release the mint oils (don't shred the leaves).","Add lime juice and stir.","Fill the glass with ice.","Pour 2 oz rum over the ice.","Top with 2 oz club soda.","Stir gently and garnish with a mint sprig and lime wheel."],glass:"Highball Glass",category:"Cocktail",flavor:"herbal",difficulty:"Medium",img:""},
+  {name:"Dark and Stormy",ingredients:[{name:"Dark Rum",measure:"2 oz"},{name:"Ginger Beer",measure:"4 oz"},{name:"Lime",measure:"1 wedge"}],steps:["Fill a highball glass with ice.","Pour 4 oz ginger beer over the ice.","Float 2 oz dark rum on top by pouring slowly over the back of a spoon.","Squeeze a lime wedge and drop it in.","Stir gently if desired and serve."],glass:"Highball Glass",category:"Highball",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Mai Tai",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Lime Juice",measure:"1 oz"},{name:"Orange Curacao",measure:"0.5 oz"},{name:"Orgeat",measure:"0.5 oz"},{name:"Simple Syrup",measure:"0.25 oz"}],steps:["Add rum, lime juice, orange curacao, orgeat, and simple syrup to a shaker with ice.","Shake vigorously for 15 seconds.","Strain into an old fashioned glass filled with crushed ice.","Optionally float 0.5 oz dark rum on top.","Garnish with a mint sprig, lime shell, and edible flower."],glass:"Old Fashioned Glass",category:"Tiki",flavor:"sweet",difficulty:"Advanced",img:""},
+  {name:"Piña Colada",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Pineapple Juice",measure:"3 oz"},{name:"Coconut Cream",measure:"1.5 oz"}],steps:["Add rum, pineapple juice, and coconut cream to a blender with 1 cup of ice.","Blend until smooth.","Pour into a hurricane glass or large goblet.","Garnish with a pineapple wedge and maraschino cherry.","Serve with a straw."],glass:"Hurricane Glass",category:"Frozen",flavor:"sweet",difficulty:"Medium",img:""},
+  {name:"Hurricane",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Passion Fruit Juice",measure:"2 oz"},{name:"Orange Juice",measure:"1 oz"},{name:"Lime Juice",measure:"0.5 oz"},{name:"Grenadine",measure:"0.5 oz"}],steps:["Add rum, passion fruit juice, orange juice, lime juice, and grenadine to a shaker with ice.","Shake well for 10–15 seconds.","Strain into a hurricane glass filled with ice.","Garnish with an orange slice and cherry."],glass:"Hurricane Glass",category:"Tiki",flavor:"sweet",difficulty:"Medium",img:""},
+  {name:"Rum Punch",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Orange Juice",measure:"2 oz"},{name:"Pineapple Juice",measure:"2 oz"},{name:"Grenadine",measure:"0.5 oz"},{name:"Lime Juice",measure:"0.5 oz"}],steps:["Add all ingredients to a shaker with ice.","Shake well for 10 seconds.","Strain into a tall glass filled with ice.","Garnish with an orange slice and a cherry.","Serve with a straw."],glass:"Hurricane Glass",category:"Punch",flavor:"sweet",difficulty:"Easy",img:""},
+  {name:"Painkiller",ingredients:[{name:"Rum",measure:"2 oz"},{name:"Pineapple Juice",measure:"4 oz"},{name:"Orange Juice",measure:"1 oz"},{name:"Coconut Cream",measure:"1 oz"},{name:"Nutmeg",measure:"1 pinch"}],steps:["Add rum, pineapple juice, orange juice, and coconut cream to a shaker with ice.","Shake vigorously for 15 seconds.","Strain into a tall glass filled with ice.","Grate fresh nutmeg on top.","Garnish with an orange slice."],glass:"Highball Glass",category:"Tiki",flavor:"sweet",difficulty:"Medium",img:""},
+  // ── TEQUILA ──
+  {name:"Margarita",ingredients:[{name:"Tequila",measure:"2 oz"},{name:"Triple Sec",measure:"1 oz"},{name:"Lime Juice",measure:"1 oz"},{name:"Salt",measure:"rim"}],steps:["Run a lime wedge around the rim of a rocks glass and dip in salt.","Add tequila, triple sec, and lime juice to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into the salt-rimmed glass over fresh ice.","Garnish with a lime wheel."],glass:"Rocks Glass",category:"Cocktail",flavor:"citrus",difficulty:"Medium",img:""},
+  {name:"Paloma",ingredients:[{name:"Tequila",measure:"2 oz"},{name:"Grapefruit Juice",measure:"3 oz"},{name:"Lime Juice",measure:"0.5 oz"},{name:"Club Soda",measure:"2 oz"},{name:"Salt",measure:"1 pinch"}],steps:["Rim a highball glass with salt (optional).","Fill with ice.","Pour 2 oz tequila, grapefruit juice, and lime juice over the ice.","Top with club soda.","Stir gently and garnish with a grapefruit wedge."],glass:"Highball Glass",category:"Cocktail",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Tequila Sunrise",ingredients:[{name:"Tequila",measure:"2 oz"},{name:"Orange Juice",measure:"4 oz"},{name:"Grenadine",measure:"0.5 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz tequila over the ice.","Add 4 oz orange juice and stir.","Slowly pour 0.5 oz grenadine down the inside of the glass — it will sink and create a sunrise effect.","Do not stir — garnish with an orange slice and cherry."],glass:"Highball Glass",category:"Cocktail",flavor:"sweet",difficulty:"Easy",img:""},
+  {name:"Ranch Water",ingredients:[{name:"Tequila",measure:"2 oz"},{name:"Lime Juice",measure:"1 oz"},{name:"Club Soda",measure:"4 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz tequila and 1 oz lime juice over the ice.","Top with 4 oz club soda (Topo Chico is traditional).","Stir gently and garnish with a lime wedge."],glass:"Highball Glass",category:"Highball",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Mexican Mule",ingredients:[{name:"Tequila",measure:"2 oz"},{name:"Ginger Beer",measure:"4 oz"},{name:"Lime Juice",measure:"0.75 oz"}],steps:["Fill a copper mug or highball glass with ice.","Pour 2 oz tequila and lime juice over the ice.","Top with 4 oz ginger beer.","Stir gently and garnish with a lime wheel."],glass:"Copper Mug",category:"Mule",flavor:"bubbly",difficulty:"Easy",img:""},
+  // ── CHAMPAGNE / WINE ──
+  {name:"Mimosa",ingredients:[{name:"Champagne",measure:"3 oz"},{name:"Orange Juice",measure:"3 oz"}],steps:["Pour 3 oz chilled orange juice into a champagne flute.","Slowly top with 3 oz chilled champagne.","Gently stir once.","Garnish with an orange twist if desired."],glass:"Champagne Flute",category:"Sparkling",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Aperol Spritz",ingredients:[{name:"Aperol",measure:"3 oz"},{name:"Champagne",measure:"3 oz"},{name:"Club Soda",measure:"1 splash"}],steps:["Fill a large wine glass with ice.","Pour 3 oz Aperol over the ice.","Add 3 oz prosecco or champagne.","Top with a splash of club soda.","Stir very gently and garnish with an orange slice."],glass:"Wine Glass",category:"Spritz",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Bellini",ingredients:[{name:"Champagne",measure:"4 oz"},{name:"Peach",measure:"2 oz puree"}],steps:["Add 2 oz peach puree to the bottom of a champagne flute.","Slowly pour 4 oz chilled champagne on top.","Gently stir to combine.","Serve immediately."],glass:"Champagne Flute",category:"Sparkling",flavor:"bubbly",difficulty:"Easy",img:""},
+  {name:"Kir Royale",ingredients:[{name:"Champagne",measure:"5 oz"},{name:"Chambord",measure:"0.5 oz"}],steps:["Pour 0.5 oz Chambord into a champagne flute.","Slowly top with 5 oz chilled champagne.","The Chambord will create a beautiful gradient.","Garnish with a raspberry if desired."],glass:"Champagne Flute",category:"Sparkling",flavor:"bubbly",difficulty:"Easy",img:""},
+  // ── SCOTCH ──
+  {name:"Scotch and Soda",ingredients:[{name:"Scotch",measure:"2 oz"},{name:"Club Soda",measure:"4 oz"}],steps:["Fill a highball glass with ice.","Pour 2 oz scotch over the ice.","Top with 4 oz club soda.","Stir gently and serve."],glass:"Highball Glass",category:"Highball",flavor:"quick",difficulty:"Easy",img:""},
+  {name:"Rob Roy",ingredients:[{name:"Scotch",measure:"2 oz"},{name:"Sweet Vermouth",measure:"1 oz"},{name:"Angostura Bitters",measure:"2 dashes"}],steps:["Add scotch, sweet vermouth, and bitters to a mixing glass with ice.","Stir for 20–30 seconds until well chilled.","Strain into a chilled coupe glass.","Garnish with a brandied cherry."],glass:"Coupe Glass",category:"Cocktail",flavor:"bold",difficulty:"Medium",img:""},
+  {name:"Rusty Nail",ingredients:[{name:"Scotch",measure:"2 oz"},{name:"Drambuie",measure:"0.75 oz"}],steps:["Fill an old fashioned glass with a large ice cube.","Pour 2 oz scotch over the ice.","Add 0.75 oz Drambuie.","Stir gently for 10 seconds.","Garnish with a lemon twist."],glass:"Old Fashioned Glass",category:"Cocktail",flavor:"bold",difficulty:"Easy",img:""},
+  // ── BRANDY ──
+  {name:"Brandy Alexander",ingredients:[{name:"Brandy",measure:"1.5 oz"},{name:"Creme de Cacao",measure:"1 oz"},{name:"Cream",measure:"1 oz"},{name:"Nutmeg",measure:"1 pinch"}],steps:["Add brandy, creme de cacao, and cream to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into a chilled cocktail glass.","Grate fresh nutmeg on top and serve."],glass:"Cocktail Glass",category:"Cocktail",flavor:"creamy",difficulty:"Medium",img:""},
+  {name:"Sidecar",ingredients:[{name:"Brandy",measure:"2 oz"},{name:"Cointreau",measure:"0.75 oz"},{name:"Lemon Juice",measure:"0.75 oz"}],steps:["Optionally rim a coupe glass with sugar.","Add brandy, Cointreau, and lemon juice to a shaker with ice.","Shake vigorously for 10–15 seconds.","Strain into the prepared glass.","Garnish with an orange twist."],glass:"Coupe Glass",category:"Cocktail",flavor:"citrus",difficulty:"Medium",img:""},
+  // ── SAVORY ──
+  {name:"Bloody Mary",ingredients:[{name:"Vodka",measure:"2 oz"},{name:"Tomato Juice",measure:"4 oz"},{name:"Lemon Juice",measure:"0.5 oz"},{name:"Worcestershire Sauce",measure:"3 dashes"},{name:"Tabasco Sauce",measure:"2 dashes"},{name:"Salt",measure:"1 pinch"},{name:"Pepper",measure:"1 pinch"}],steps:["Add vodka, tomato juice, lemon juice, Worcestershire, Tabasco, salt, and pepper to a shaker with ice.","Roll the mixture back and forth between the shaker and glass (do not shake hard).","Strain into a tall glass filled with ice.","Garnish with a celery stalk, lemon wedge, and olive.","Adjust hot sauce and seasoning to taste."],glass:"Highball Glass",category:"Cocktail",flavor:"savory",difficulty:"Medium",img:""},
+  {name:"Michelada",ingredients:[{name:"Beer",measure:"12 oz"},{name:"Lime Juice",measure:"1 oz"},{name:"Hot Sauce",measure:"3 dashes"},{name:"Worcestershire Sauce",measure:"2 dashes"},{name:"Salt",measure:"rim"}],steps:["Rim a tall glass with salt and chili powder.","Fill the glass with ice.","Add lime juice, hot sauce, and Worcestershire sauce.","Top with cold beer.","Stir gently and garnish with a lime wedge."],glass:"Pint Glass",category:"Beer Cocktail",flavor:"savory",difficulty:"Easy",img:""},
+  // ── OTHER ──
+  {name:"Amaretto Sour",ingredients:[{name:"Amaretto",measure:"1.5 oz"},{name:"Lemon Juice",measure:"1 oz"},{name:"Simple Syrup",measure:"0.5 oz"},{name:"Egg White",measure:"1 (optional)"}],steps:["Add amaretto, lemon juice, simple syrup, and egg white (if using) to a shaker WITHOUT ice.","Dry shake for 15 seconds.","Add ice and shake again for 10–15 seconds.","Strain into an old fashioned glass over ice.","Garnish with a cherry and orange peel."],glass:"Old Fashioned Glass",category:"Sour",flavor:"citrus",difficulty:"Medium",img:""}
+];
+
+/* ═══════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════ */
+const SPIRITS = [
+    {name:'Vodka',emoji:'🫧'},{name:'Gin',emoji:'🌿'},{name:'Whiskey',emoji:'🥃'},
+    {name:'Bourbon',emoji:'🏠'},{name:'Rum',emoji:'🏝️'},{name:'Tequila',emoji:'🌵'},
+    {name:'Scotch',emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿'},{name:'Brandy',emoji:'🍇'},{name:'Mezcal',emoji:'🔥'},
+    {name:'Champagne',emoji:'🍾'}
+];
+
+const CATEGORIES = {
+    'Citrus & Juice':['Lime Juice','Lemon Juice','Orange Juice','Grapefruit Juice','Cranberry Juice','Pineapple Juice','Tomato Juice','Apple Juice','Passion Fruit Juice'],
+    'Sweeteners':['Simple Syrup','Sugar','Grenadine','Honey','Agave Syrup','Maple Syrup','Sugar Syrup'],
+    'Liqueurs':['Triple Sec','Kahlua','Amaretto','Cointreau','Blue Curacao','Baileys Irish Cream','Grand Marnier','Campari','Dry Vermouth','Sweet Vermouth','Absinthe','Maraschino Liqueur','Chambord','St-Germain','Aperol','Drambuie','Frangelico','Galliano','Midori','Peach Schnapps','Sambuca','Sloe Gin','Southern Comfort','Jagermeister'],
+    'Mixers & Sodas':['Tonic Water','Club Soda','Ginger Beer','Ginger Ale','Cola','Lemon-Lime Soda','Coconut Cream','Coconut Milk','Cream','Milk','Half-and-Half','Coffee','Espresso','Hot Water','Water','Ice'],
+    'Bitters & Extras':['Angostura Bitters','Orange Bitters','Peychauds Bitters','Tabasco Sauce','Worcestershire Sauce','Vanilla Extract','Rose Water'],
+    'Garnishes & Fresh':['Mint','Basil','Lime','Lemon','Orange','Maraschino Cherry','Olive','Egg White','Egg Yolk','Salt','Nutmeg','Cinnamon','Whipped Cream','Chocolate','Banana','Strawberries','Peach']
+};
+
+const FLAVOR_PROFILES = [
+    {key:'quick',emoji:'🍺',title:'Quick & Easy',keywords:[]},
+    {key:'savory',emoji:'🌶️',title:'Savory & Spicy',keywords:['tomato juice','tomato','worcestershire','tabasco','hot sauce','celery','olive','horseradish','pepper','bloody','salt','soy sauce']},
+    {key:'creamy',emoji:'🧊',title:'Creamy & Indulgent',keywords:['cream','milk','half-and-half','baileys','kahlua','coconut cream','coconut milk','egg yolk','whipped cream','chocolate','ice cream','irish cream','advocaat','eggnog','condensed milk','creme de cacao']},
+    {key:'herbal',emoji:'🌿',title:'Herbal & Botanical',keywords:['mint','basil','elderflower','st-germain','chartreuse','cucumber','rosemary','thyme','lavender','sage','herbsaint','benedictine']},
+    {key:'bubbly',emoji:'🍾',title:'Bubbly & Light',keywords:['champagne','prosecco','tonic water','tonic','club soda','soda water','ginger beer','ginger ale','lemon-lime soda','sprite','sparkling','carbonated','seltzer','cava']},
+    {key:'sweet',emoji:'🍹',title:'Sweet & Fruity',keywords:['grenadine','pineapple juice','pineapple','cranberry juice','cranberry','orange juice','passion fruit','apple juice','mango','peach','banana','strawberry','strawberries','midori','peach schnapps','chambord','blue curacao','fruit','melon','raspberry','blackberry','lychee','guava','watermelon','agave','orgeat']},
+    {key:'citrus',emoji:'🍋',title:'Citrus & Sour',keywords:['lime juice','lemon juice','grapefruit juice','grapefruit','sour mix','sour','triple sec','cointreau','grand marnier','lime','lemon','citrus','yuzu','curacao']},
+    {key:'bold',emoji:'🥃',title:'Spirit-Forward & Bold',keywords:['angostura','orange bitters','peychaud','bitters','vermouth','dry vermouth','sweet vermouth','absinthe','campari','aperol','amaro','fernet','drambuie','amaretto','maraschino liqueur']}
+];
+
+const API = 'https://www.thecocktaildb.com/api/json/v1/1';
+const DEFAULT_IMG = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNDUlIiBmb250LXNpemU9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZTJiMzQwIj7wn424PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Q29ja3RhaWw8L3RleHQ+PC9zdmc+';
+
+let selected = new Set();
+let allIngredients = [];
+let allResults = [];
+
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    renderSpirits();
+    renderBrowseGrid();
+    fetchIngredientList();
+    setupAutocomplete();
+});
+
+async function fetchIngredientList() {
+    try {
+        const res = await fetch(`${API}/list.php?i=list`);
+        const data = await res.json();
+        if (data.drinks) {
+            allIngredients = data.drinks.map(d => d.strIngredient1).filter(Boolean).sort();
+        }
+    } catch(e) { console.warn('Could not fetch ingredient list', e); }
+}
+
+/* ═══════════════════════════════════════
+   SPIRITS
+   ═══════════════════════════════════════ */
+function renderSpirits() {
+    document.getElementById('spiritsGrid').innerHTML = SPIRITS.map(s => `
+        <div class="spirit-btn" data-name="${s.name}" onclick="toggleSpirit(this,'${s.name}')">
+            <span class="emoji">${s.emoji}</span>
+            <span class="label">${s.name}</span>
+        </div>`).join('');
+}
+function toggleSpirit(el, name) {
+    if (selected.has(name)) { selected.delete(name); el.classList.remove('active'); }
+    else { selected.add(name); el.classList.add('active'); }
+    renderSelected();
+}
+
+/* ═══════════════════════════════════════
+   BROWSE GRID
+   ═══════════════════════════════════════ */
+function renderBrowseGrid() {
+    const container = document.getElementById('tab-browse');
+    let html = '';
+    for (const [cat, items] of Object.entries(CATEGORIES)) {
+        html += `<div class="cat-group"><div class="cat-title">${cat}</div><div class="chips">`;
+        items.forEach(item => {
+            const esc = item.replace(/'/g, "\\'");
+            html += `<div class="chip" data-name="${item}" onclick="toggleChip(this,'${esc}')">${item}</div>`;
+        });
+        html += `</div></div>`;
+    }
+    container.innerHTML = html;
+}
+function toggleChip(el, name) {
+    if (selected.has(name)) { selected.delete(name); el.classList.remove('active'); }
+    else { selected.add(name); el.classList.add('active'); }
+    renderSelected();
+}
+
+/* ═══════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════ */
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    if (tab === 'browse') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-browse').classList.add('active');
+    } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-search').classList.add('active');
+    }
+}
+
+/* ═══════════════════════════════════════
+   AUTOCOMPLETE
+   ═══════════════════════════════════════ */
+function setupAutocomplete() {
+    const input = document.getElementById('searchInput');
+    const list = document.getElementById('acList');
+    input.addEventListener('input', () => {
+        const val = input.value.trim().toLowerCase();
+        if (val.length < 1) { list.style.display = 'none'; return; }
+        const matches = allIngredients.filter(i => i.toLowerCase().includes(val)).slice(0, 10);
+        if (matches.length === 0) { list.style.display = 'none'; return; }
+        list.innerHTML = matches.map(m => {
+            const already = selected.has(m);
+            const esc = m.replace(/'/g, "\\'");
+            return `<div class="ac-item${already ? ' already' : ''}" onclick="addFromSearch('${esc}')">${m}${already ? ' ✓' : ''}</div>`;
+        }).join('');
+        list.style.display = 'block';
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            const val = input.value.trim();
+            if (val) { selected.add(val); renderSelected(); syncUI(); input.value = ''; list.style.display = 'none'; }
+        }
+    });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-wrap')) list.style.display = 'none';
+    });
+}
+function addFromSearch(name) {
+    selected.add(name);
+    renderSelected();
+    syncUI();
+    document.getElementById('searchInput').value = '';
+    document.getElementById('acList').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════
+   SELECTED TAGS
+   ═══════════════════════════════════════ */
+function renderSelected() {
+    const area = document.getElementById('selectedTags');
+    const badge = document.getElementById('countBadge');
+    if (selected.size === 0) {
+        area.innerHTML = '<span class="no-ing">None selected yet — pick some above!</span>';
+        badge.style.display = 'none';
+    } else {
+        area.innerHTML = [...selected].map(s => {
+            const esc = s.replace(/'/g, "\\'");
+            return `<div class="sel-tag">${s}<span class="remove" onclick="removeSelected('${esc}')">✕</span></div>`;
+        }).join('');
+        badge.textContent = selected.size;
+        badge.style.display = 'flex';
+    }
+}
+function removeSelected(name) {
+    selected.delete(name);
+    renderSelected();
+    syncUI();
+}
+function syncUI() {
+    document.querySelectorAll('.spirit-btn').forEach(btn => btn.classList.toggle('active', selected.has(btn.dataset.name)));
+    document.querySelectorAll('.chip').forEach(chip => chip.classList.toggle('active', selected.has(chip.dataset.name)));
+}
+function clearAll() {
+    selected.clear();
+    renderSelected();
+    syncUI();
+    document.getElementById('results').innerHTML = '';
+    allResults = [];
+}
+
+/* ═══════════════════════════════════════
+   FLAVOR CLASSIFICATION
+   ═══════════════════════════════════════ */
+function classifyFlavor(drinkIngredients, overrideFlavor) {
+    if (overrideFlavor) return overrideFlavor;
+    if (drinkIngredients.length <= 3) return 'quick';
+    const allIng = drinkIngredients.map(di => di.name.toLowerCase());
+    const combined = allIng.join(' ');
+    let bestKey = 'bold';
+    let bestScore = 0;
+    for (const profile of FLAVOR_PROFILES) {
+        if (profile.key === 'quick') continue;
+        let score = 0;
+        for (const kw of profile.keywords) {
+            if (allIng.some(ing => ing.includes(kw) || kw.includes(ing)) || combined.includes(kw)) score++;
+        }
+        if (score > bestScore) { bestScore = score; bestKey = profile.key; }
+    }
+    return bestKey;
+}
+function getProfile(key) {
+    return FLAVOR_PROFILES.find(p => p.key === key) || FLAVOR_PROFILES[FLAVOR_PROFILES.length - 1];
+}
+
+/* ═══════════════════════════════════════
+   COLLAPSIBLE SECTIONS
+   ═══════════════════════════════════════ */
+function toggleFlavor(id) {
+    const body = document.getElementById('fb-' + id);
+    const arrow = document.getElementById('fa-' + id);
+    if (body.classList.contains('collapsed')) { body.classList.remove('collapsed'); arrow.classList.add('open'); }
+    else { body.classList.add('collapsed'); arrow.classList.remove('open'); }
+}
+
+/* ═══════════════════════════════════════
+   MATCHING HELPERS
+   ═══════════════════════════════════════ */
+function norm(s) { return s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim(); }
+
+function ingredientMatch(cocktailIng, userSet) {
+    const ci = norm(cocktailIng);
+    return [...userSet].some(ui => {
+        const n = norm(ui);
+        return ci.includes(n) || n.includes(ci);
+    });
+}
+
+function parseSteps(text) {
+    if (!text) return ['Follow the recipe instructions.'];
+    // Try numbered patterns: "1." "2." etc.
+    const numbered = text.split(/\d+\.\s+/).filter(s => s.trim().length > 0);
+    if (numbered.length > 1) return numbered.map(s => s.trim().replace(/\.\s*$/, '.'));
+    // Split by sentences
+    const sentences = text.split(/\.\s+/).filter(s => s.trim().length > 3);
+    if (sentences.length > 1) return sentences.map(s => s.trim().replace(/\.\s*$/, '') + '.');
+    return [text.trim()];
+}
+
+function getDifficulty(count) {
+    if (count <= 3) return 'Easy';
+    if (count <= 5) return 'Medium';
+    return 'Advanced';
+}
+
+/* ═══════════════════════════════════════
+   FIND COCKTAILS (HYBRID)
+   ═══════════════════════════════════════ */
+async function findCocktails() {
+    if (selected.size === 0) { alert('Please select at least one ingredient!'); return; }
+    const resultsDiv = document.getElementById('results');
+    const spinnerEl = document.getElementById('spinner');
+    resultsDiv.innerHTML = '';
+    spinnerEl.style.display = 'block';
+    allResults = [];
+
+    const fullMatch = [];
+    const almostMatch = [];
+
+    // ── A) Search LOCAL_DB ──
+    for (const drink of LOCAL_DB) {
+        let missing = [], have = [];
+        drink.ingredients.forEach(di => {
+            if (ingredientMatch(di.name, selected)) have.push(di);
+            else missing.push(di);
+        });
+        if (missing.length === 0 || missing.length <= 2) {
+            const obj = {
+                drink: { strDrink: drink.name, strDrinkThumb: drink.img || DEFAULT_IMG, strCategory: drink.category, strGlass: drink.glass, strInstructions: drink.steps.join(' ') },
+                drinkIngredients: drink.ingredients,
+                missing, have,
+                flavor: drink.flavor || classifyFlavor(drink.ingredients, null),
+                difficulty: drink.difficulty,
+                steps: drink.steps,
+                source: 'local'
+            };
+            if (missing.length === 0) fullMatch.push(obj);
+            else almostMatch.push(obj);
+        }
+    }
+
+    // ── B) Search TheCocktailDB API ──
+    try {
+        const cocktailMap = {};
+        for (const ing of selected) {
+            try {
+                const res = await fetch(`${API}/filter.php?i=${encodeURIComponent(ing)}`);
+                const data = await res.json();
+                if (data.drinks) {
+                    data.drinks.forEach(d => {
+                        if (!cocktailMap[d.idDrink]) cocktailMap[d.idDrink] = { count: 0, name: d.strDrink, thumb: d.strDrinkThumb };
+                        cocktailMap[d.idDrink].count++;
+                    });
+                }
+            } catch (_) {}
+        }
+
+        const sorted = Object.entries(cocktailMap)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 80);
+
+        const batchSize = 10;
+        for (let i = 0; i < sorted.length; i += batchSize) {
+            const batch = sorted.slice(i, i + batchSize);
+            const details = await Promise.all(
+                batch.map(([id]) => fetch(`${API}/lookup.php?i=${id}`).then(r => r.json()))
+            );
+            details.forEach(data => {
+                if (!data.drinks || !data.drinks[0]) return;
+                const drink = data.drinks[0];
+                const drinkIngredients = [];
+                for (let j = 1; j <= 15; j++) {
+                    const ing = drink[`strIngredient${j}`];
+                    const measure = drink[`strMeasure${j}`];
+                    if (ing && ing.trim()) drinkIngredients.push({ name: ing.trim(), measure: (measure || '').trim() });
+                }
+                let missing = [], have = [];
+                drinkIngredients.forEach(di => {
+                    ingredientMatch(di.name, selected) ? have.push(di) : missing.push(di);
+                });
+                if (missing.length <= 2) {
+                    const obj = {
+                        drink,
+                        drinkIngredients,
+                        missing, have,
+                        flavor: classifyFlavor(drinkIngredients, null),
+                        difficulty: getDifficulty(drinkIngredients.length),
+                        steps: parseSteps(drink.strInstructions),
+                        source: 'api'
+                    };
+                    if (missing.length === 0) fullMatch.push(obj);
+                    else almostMatch.push(obj);
+                }
+            });
+        }
+    } catch (err) { console.warn('API error:', err); }
+
+    // ── C) Deduplicate (local takes priority) ──
+    function dedup(arr) {
+        const seen = new Set();
+        return arr.filter(c => {
+            const key = norm(c.drink.strDrink);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+    const dedupFull = dedup(fullMatch);
+    const dedupAlmost = dedup(almostMatch);
+
+    // Store all for modal access
+    allResults = [...dedupFull, ...dedupAlmost];
+
+    // ── D) Render ──
+    spinnerEl.style.display = 'none';
+    let html = '';
+
+    if (dedupFull.length > 0) {
+        html += `<div class="main-section-title"><span class="icon">✅</span> You Can Make (${dedupFull.length})</div>`;
+        html += buildFlavorSections(dedupFull, 'full');
+    }
+    if (dedupAlmost.length > 0) {
+        html += `<div class="main-section-title"><span class="icon">🟡</span> Almost There (${dedupAlmost.length})</div>`;
+        html += buildFlavorSections(dedupAlmost, 'almost');
+    }
+    if (dedupFull.length === 0 && dedupAlmost.length === 0) {
+        html = '<div class="no-results">😕 No cocktails found. Try adding more ingredients!</div>';
+    }
+    resultsDiv.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   BUILD FLAVOR SECTIONS
+   ═══════════════════════════════════════ */
+function buildFlavorSections(cocktails, prefix) {
+    const groups = {};
+    cocktails.forEach(c => {
+        if (!groups[c.flavor]) groups[c.flavor] = [];
+        groups[c.flavor].push(c);
+    });
+    let html = '';
+    for (const profile of FLAVOR_PROFILES) {
+        const list = groups[profile.key];
+        if (!list || list.length === 0) continue;
+        const uid = prefix + '-' + profile.key;
+        html += `
+        <div class="flavor-section">
+            <div class="flavor-header" onclick="toggleFlavor('${uid}')">
+                <span class="fl-emoji">${profile.emoji}</span>
+                <span class="fl-title">${profile.title}</span>
+                <span class="fl-count">${list.length} cocktail${list.length > 1 ? 's' : ''}</span>
+                <span class="fl-arrow open" id="fa-${uid}">▼</span>
+            </div>
+            <div class="flavor-body" id="fb-${uid}">
+                <div class="cards">
+                    ${list.map(c => {
+                        const idx = allResults.indexOf(c);
+                        return compactCardHTML(c, idx);
+                    }).join('')}
+                </div>
+            </div>
+        </div>`;
+    }
+    return html;
+}
+
+/* ═══════════════════════════════════════
+   COMPACT CARD
+   ═══════════════════════════════════════ */
+function compactCardHTML(c, index) {
+    const d = c.drink;
+    const img = d.strDrinkThumb || DEFAULT_IMG;
+    const fp = getProfile(c.flavor);
+    const diffClass = c.difficulty === 'Easy' ? 'badge-easy' : c.difficulty === 'Medium' ? 'badge-medium' : 'badge-advanced';
+    return `
+    <div class="card" onclick="openModal(${index})">
+        <img src="${img}" alt="${d.strDrink}" loading="lazy" onerror="this.src='${DEFAULT_IMG}'">
+        <div class="card-body">
+            <h3>${d.strDrink}</h3>
+            <div class="card-info">
+                <span class="flavor-badge">${fp.emoji}</span>
+                <span class="diff-badge ${diffClass}">${c.difficulty}</span>
+                <span class="ing-count">${c.drinkIngredients.length} ingredients</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════ */
+function openModal(index) {
+    const c = allResults[index];
+    if (!c) return;
+    const d = c.drink;
+    const img = d.strDrinkThumb || DEFAULT_IMG;
+    const fp = getProfile(c.flavor);
+    const diffClass = c.difficulty === 'Easy' ? 'badge-easy' : c.difficulty === 'Medium' ? 'badge-medium' : 'badge-advanced';
+
+    const ingHTML = c.drinkIngredients.map(di => {
+        const miss = c.missing.some(m => m.name === di.name);
+        return `<li class="${miss ? 'missing' : ''}">${di.measure ? di.measure + ' ' : ''}${di.name}${miss ? ' (need this!)' : ''}</li>`;
+    }).join('');
+
+    const stepsHTML = c.steps.map(s => `<li><span>${s}</span></li>`).join('');
+
+    document.getElementById('modalContent').innerHTML = `
+        <img class="modal-img" src="${img}" alt="${d.strDrink}" onerror="this.src='${DEFAULT_IMG}'">
+        <div class="modal-body">
+            <h2>${d.strDrink}</h2>
+            <div class="modal-meta">
+                <span>${fp.emoji} ${fp.title}</span>
+                <span>🍸 ${d.strGlass || 'Glass'}</span>
+                <span class="diff-badge ${diffClass}">${c.difficulty}</span>
+            </div>
+            <h4>🧾 Ingredients</h4>
+            <ul class="modal-ingredients">${ingHTML}</ul>
+            <h4>📝 Instructions</h4>
+            <ol class="modal-steps">${stepsHTML}</ol>
+        </div>`;
+
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
