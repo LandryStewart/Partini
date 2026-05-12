@@ -3,127 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍸 Cocktail Finder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Partini</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Poppins',sans-serif;background:#000;color:#eee;min-height:100vh;}
-        header{background:linear-gradient(135deg,#0a0a0a,#111);text-align:center;padding:36px 20px 28px;border-bottom:3px solid #e2b340;}
-        header h1{font-size:2.4rem;color:#e2b340;letter-spacing:1px;}
-        header p{margin-top:6px;font-weight:300;color:#999;font-size:1rem;}
-        .container{max-width:1200px;margin:0 auto;padding:28px 20px 60px;}
-        .step{margin-bottom:28px;}
-        .step-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-        .step-num{background:#e2b340;color:#000;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;}
-        .step-header h2{font-size:1.2rem;font-weight:600;color:#ccc;}
+
+        /* ═══ PREMIUM ANIMATED BACKGROUND ═══ */
+        body{
+            font-family:'Inter',sans-serif;
+            background:#05050a;
+            color:#eee;
+            min-height:100vh;
+            overflow-x:hidden;
+            position:relative;
+        }
+        body::before{
+            content:'';
+            position:fixed;
+            top:0;left:0;right:0;bottom:0;
+            background:
+                radial-gradient(ellipse 600px 600px at 15% 20%, rgba(88,28,135,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 500px at 85% 80%, rgba(30,58,138,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 400px at 50% 50%, rgba(120,80,20,0.04) 0%, transparent 70%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+            z-index:0;
+            pointer-events:none;
+        }
+        @keyframes bgShift{
+            0%{transform:translate(0,0) scale(1);}
+            33%{transform:translate(30px,-20px) scale(1.05);}
+            66%{transform:translate(-20px,30px) scale(0.98);}
+            100%{transform:translate(10px,10px) scale(1.02);}
+        }
+
+        /* ═══ FLOATING BOKEH PARTICLES ═══ */
+        .bokeh{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden;}
+        .bokeh span{
+            position:absolute;
+            border-radius:50%;
+            animation:float linear infinite;
+            opacity:0;
+        }
+        .bokeh span:nth-child(1){width:4px;height:4px;background:rgba(201,162,39,0.25);left:10%;animation-duration:18s;animation-delay:0s;}
+        .bokeh span:nth-child(2){width:6px;height:6px;background:rgba(201,162,39,0.15);left:25%;animation-duration:22s;animation-delay:2s;}
+        .bokeh span:nth-child(3){width:3px;height:3px;background:rgba(147,130,220,0.2);left:40%;animation-duration:16s;animation-delay:4s;}
+        .bokeh span:nth-child(4){width:5px;height:5px;background:rgba(201,162,39,0.2);left:55%;animation-duration:24s;animation-delay:1s;}
+        .bokeh span:nth-child(5){width:4px;height:4px;background:rgba(100,140,220,0.15);left:70%;animation-duration:19s;animation-delay:3s;}
+        .bokeh span:nth-child(6){width:7px;height:7px;background:rgba(201,162,39,0.12);left:85%;animation-duration:21s;animation-delay:5s;}
+        .bokeh span:nth-child(7){width:3px;height:3px;background:rgba(180,140,255,0.18);left:30%;animation-duration:17s;animation-delay:6s;}
+        .bokeh span:nth-child(8){width:5px;height:5px;background:rgba(201,162,39,0.2);left:60%;animation-duration:23s;animation-delay:0.5s;}
+        .bokeh span:nth-child(9){width:4px;height:4px;background:rgba(100,180,220,0.12);left:80%;animation-duration:20s;animation-delay:7s;}
+        .bokeh span:nth-child(10){width:6px;height:6px;background:rgba(201,162,39,0.15);left:15%;animation-duration:25s;animation-delay:2.5s;}
+        @keyframes float{
+            0%{transform:translateY(100vh) scale(0);opacity:0;}
+            10%{opacity:1;}
+            90%{opacity:1;}
+            100%{transform:translateY(-100vh) scale(1.5);opacity:0;}
+        }
+
+        /* ═══ SIDE WATERMARKS (horizontal wrapping text) ═══ */
+        .side-watermark{
+            position:fixed;top:0;bottom:0;width:180px;
+            overflow:hidden;z-index:0;pointer-events:none;
+        }
+        .side-watermark.left{left:0;}
+        .side-watermark.right{right:0;text-align:right;}
+        .side-watermark .wm-text{
+            font-family:'Inter',sans-serif;
+            font-size:9px;
+            font-weight:300;
+            color:rgba(255,255,255,0.03);
+            line-height:2.4;
+            padding:8px 8px;
+            user-select:none;
+            word-spacing:6px;
+            overflow-wrap:break-word;
+            word-break:break-all;
+        }
+
+        /* ═══ HEADER ═══ */
+        header{
+            position:relative;z-index:2;
+            text-align:center;
+            padding:44px 20px 34px;
+            background:linear-gradient(180deg, rgba(10,10,18,0.95) 0%, rgba(5,5,10,0.8) 100%);
+            border-bottom:1px solid rgba(201,162,39,0.3);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+        }
+        header h1{
+            font-family:'Playfair Display',serif;
+            font-size:3rem;
+            font-weight:800;
+            letter-spacing:3px;
+            background:linear-gradient(135deg, #f0d060 0%, #c9a227 30%, #f5e090 50%, #c9a227 70%, #f0d060 100%);
+            background-size:200% auto;
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+            animation:shimmer 4s ease-in-out infinite;
+        }
+        @keyframes shimmer{
+            0%,100%{background-position:0% center;}
+            50%{background-position:200% center;}
+        }
+        header p{
+            margin-top:10px;
+            font-weight:300;
+            color:rgba(255,255,255,0.45);
+            font-size:.95rem;
+            letter-spacing:0.5px;
+        }
+        header .subtitle-line{
+            width:60px;height:1px;
+            background:linear-gradient(90deg,transparent,rgba(201,162,39,0.5),transparent);
+            margin:14px auto 0;
+        }
+
+        /* ═══ CONTAINER ═══ */
+        .container{max-width:1100px;margin:0 auto;padding:32px 24px 60px;position:relative;z-index:2;}
+
+        /* ═══ STEPS ═══ */
+        .step{margin-bottom:32px;}
+        .step-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+        .step-num{
+            background:linear-gradient(135deg,#c9a227,#f0d060);
+            color:#0a0a0a;
+            width:36px;height:36px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:1rem;flex-shrink:0;
+            box-shadow:0 0 20px rgba(201,162,39,0.25);
+        }
+        .step-header h2{font-size:1.15rem;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:0.3px;}
+
+        /* ═══ SPIRIT BUTTONS (pill shape, no emoji) ═══ */
         .spirits-grid{display:flex;flex-wrap:wrap;gap:12px;}
-        .spirit-btn{background:#111;border:2px solid #222;border-radius:12px;padding:14px 18px;cursor:pointer;text-align:center;transition:all .25s;min-width:100px;user-select:none;}
-        .spirit-btn:hover{border-color:#e2b340;background:#1a1a1a;}
-        .spirit-btn.active{border-color:#e2b340;background:#1a1a00;box-shadow:0 0 14px rgba(226,179,64,.25);}
-        .spirit-btn .emoji{font-size:1.6rem;display:block;margin-bottom:4px;}
-        .spirit-btn .label{font-size:.82rem;font-weight:500;color:#aaa;}
-        .spirit-btn.active .label{color:#e2b340;}
-        .ing-section{background:#111;border-radius:14px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.6);border:1px solid #1a1a1a;}
-        .tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #222;}
-        .tab-btn{padding:10px 22px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:500;color:#666;background:none;border:none;border-bottom:3px solid transparent;transition:all .25s;}
-        .tab-btn:hover{color:#bbb;}
-        .tab-btn.active{color:#e2b340;border-bottom-color:#e2b340;}
+        .spirit-btn{
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:26px;
+            padding:12px 28px;
+            cursor:pointer;
+            text-align:center;
+            transition:all .35s cubic-bezier(.25,.8,.25,1);
+            min-width:auto;
+            user-select:none;
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            position:relative;
+            overflow:hidden;
+        }
+        .spirit-btn::before{
+            content:'';
+            position:absolute;top:0;left:0;right:0;bottom:0;
+            background:radial-gradient(circle at 50% 50%, rgba(201,162,39,0.08), transparent 70%);
+            opacity:0;
+            transition:opacity .35s;
+        }
+        .spirit-btn:hover{border-color:rgba(201,162,39,0.4);transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,162,39,0.1);}
+        .spirit-btn:hover::before{opacity:1;}
+        .spirit-btn.active{
+            border-color:rgba(201,162,39,0.6);
+            background:rgba(201,162,39,0.08);
+            box-shadow:0 0 30px rgba(201,162,39,0.15), inset 0 0 30px rgba(201,162,39,0.05);
+        }
+        .spirit-btn.active::before{opacity:1;}
+        .spirit-btn .label{font-size:.88rem;font-weight:500;color:rgba(255,255,255,0.5);transition:color .3s;letter-spacing:0.5px;}
+        .spirit-btn.active .label{color:#e2c563;font-weight:600;}
+
+        /* ═══ INGREDIENT SECTION (Glassmorphism) ═══ */
+        .ing-section{
+            background:rgba(255,255,255,0.025);
+            border-radius:18px;
+            padding:26px;
+            backdrop-filter:blur(16px);
+            -webkit-backdrop-filter:blur(16px);
+            border:1px solid rgba(255,255,255,0.06);
+            box-shadow:0 8px 40px rgba(0,0,0,0.3);
+        }
+        .tabs{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid rgba(255,255,255,0.08);}
+        .tab-btn{
+            padding:12px 24px;cursor:pointer;
+            font-family:'Inter',sans-serif;font-size:.9rem;font-weight:500;
+            color:rgba(255,255,255,0.35);background:none;border:none;
+            border-bottom:2px solid transparent;transition:all .3s;
+        }
+        .tab-btn:hover{color:rgba(255,255,255,0.6);}
+        .tab-btn.active{color:#e2c563;border-bottom-color:#c9a227;}
         .tab-content{display:none;}.tab-content.active{display:block;}
-        .cat-group{margin-bottom:18px;}
-        .cat-title{font-size:.85rem;font-weight:600;color:#e2b340;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+
+        /* ═══ CATEGORY GROUPS & CHIPS ═══ */
+        .cat-group{margin-bottom:20px;}
+        .cat-title{
+            font-size:.78rem;font-weight:600;
+            color:rgba(201,162,39,0.7);
+            margin-bottom:10px;
+            text-transform:uppercase;
+            letter-spacing:1.5px;
+        }
         .chips{display:flex;flex-wrap:wrap;gap:8px;}
-        .chip{background:#0a0a0a;border:1.5px solid #222;border-radius:20px;padding:6px 14px;font-size:.82rem;color:#999;cursor:pointer;transition:all .2s;user-select:none;}
-        .chip:hover{border-color:#e2b340;color:#ddd;}
-        .chip.active{background:#1a1a00;border-color:#e2b340;color:#e2b340;}
+        .chip{
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:22px;
+            padding:7px 16px;
+            font-size:.82rem;
+            color:rgba(255,255,255,0.45);
+            cursor:pointer;
+            transition:all .3s cubic-bezier(.25,.8,.25,1);
+            user-select:none;
+        }
+        .chip:hover{border-color:rgba(201,162,39,0.4);color:rgba(255,255,255,0.7);transform:translateY(-1px);}
+        .chip.active{
+            background:rgba(201,162,39,0.1);
+            border-color:rgba(201,162,39,0.5);
+            color:#e2c563;
+            box-shadow:0 0 16px rgba(201,162,39,0.1);
+        }
+
+        /* ═══ SEARCH ═══ */
         .search-wrap{position:relative;max-width:500px;}
-        .search-wrap input{width:100%;padding:12px 18px;border-radius:8px;border:2px solid #222;background:#0a0a0a;color:#eee;font-family:'Poppins',sans-serif;font-size:1rem;outline:none;transition:border-color .25s;}
-        .search-wrap input:focus{border-color:#e2b340;}
-        .search-wrap input::placeholder{color:#444;}
-        .autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#111;border:1px solid #222;border-radius:0 0 8px 8px;max-height:260px;overflow-y:auto;z-index:100;display:none;}
-        .autocomplete-list .ac-item{padding:10px 18px;cursor:pointer;font-size:.9rem;color:#aaa;transition:background .15s;}
-        .autocomplete-list .ac-item:hover{background:#1a1a1a;color:#e2b340;}
-        .autocomplete-list .ac-item.already{color:#444;font-style:italic;}
-        .selected-bar{background:#0a0a0a;border:2px solid #1a1a1a;border-radius:12px;padding:16px 20px;margin:24px 0;min-height:56px;}
-        .selected-label{font-size:.82rem;color:#666;margin-bottom:8px;font-weight:500;}
+        .search-wrap input{
+            width:100%;padding:14px 20px;border-radius:12px;
+            border:1px solid rgba(255,255,255,0.08);
+            background:rgba(255,255,255,0.03);
+            color:#eee;font-family:'Inter',sans-serif;font-size:1rem;
+            outline:none;transition:all .3s;
+            backdrop-filter:blur(10px);
+        }
+        .search-wrap input:focus{border-color:rgba(201,162,39,0.5);box-shadow:0 0 20px rgba(201,162,39,0.1);}
+        .search-wrap input::placeholder{color:rgba(255,255,255,0.2);}
+        .autocomplete-list{
+            position:absolute;top:100%;left:0;right:0;
+            background:rgba(15,15,25,0.95);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:0 0 12px 12px;
+            max-height:260px;overflow-y:auto;z-index:100;display:none;
+            backdrop-filter:blur(20px);
+        }
+        .autocomplete-list .ac-item{padding:12px 20px;cursor:pointer;font-size:.9rem;color:rgba(255,255,255,0.5);transition:all .2s;}
+        .autocomplete-list .ac-item:hover{background:rgba(201,162,39,0.08);color:#e2c563;}
+        .autocomplete-list .ac-item.already{color:rgba(255,255,255,0.2);font-style:italic;}
+
+        /* ═══ SELECTED BAR ═══ */
+        .selected-bar{
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:14px;
+            padding:18px 22px;
+            margin:28px 0;
+            min-height:56px;
+            backdrop-filter:blur(10px);
+        }
+        .selected-label{font-size:.8rem;color:rgba(255,255,255,0.3);margin-bottom:10px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;}
         .selected-tags{display:flex;flex-wrap:wrap;gap:8px;}
-        .sel-tag{background:#1a1a00;border:1px solid #e2b340;color:#e2b340;padding:5px 12px;border-radius:18px;font-size:.82rem;display:flex;align-items:center;gap:6px;animation:fadeIn .3s;}
-        .sel-tag .remove{cursor:pointer;font-weight:700;font-size:.95rem;transition:color .2s;}
-        .sel-tag .remove:hover{color:#e74c3c;}
-        .no-ing{color:#444;font-size:.88rem;font-style:italic;}
-        .btn{padding:12px 22px;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .25s,transform .15s;}
+        .sel-tag{
+            background:rgba(201,162,39,0.1);
+            border:1px solid rgba(201,162,39,0.4);
+            color:#e2c563;
+            padding:6px 14px;border-radius:20px;
+            font-size:.82rem;
+            display:flex;align-items:center;gap:8px;
+            animation:fadeIn .3s;
+            backdrop-filter:blur(8px);
+        }
+        .sel-tag .remove{cursor:pointer;font-weight:700;font-size:.95rem;transition:all .2s;opacity:0.6;}
+        .sel-tag .remove:hover{color:#e74c3c;opacity:1;}
+        .no-ing{color:rgba(255,255,255,0.2);font-size:.88rem;font-style:italic;}
+
+        /* ═══ ACTION BUTTONS ═══ */
+        .btn{
+            padding:14px 24px;border:none;border-radius:12px;
+            font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;
+            cursor:pointer;transition:all .3s cubic-bezier(.25,.8,.25,1);
+            position:relative;overflow:hidden;
+        }
         .btn:active{transform:scale(.97);}
-        .action-row{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;}
-        .btn-find{background:#e2b340;color:#000;padding:14px 32px;font-size:1.05rem;position:relative;}
-        .btn-find:hover{background:#f0c24d;}
-        .btn-find .badge{position:absolute;top:-8px;right:-8px;background:#e74c3c;color:#fff;font-size:.72rem;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
-        .btn-clear{background:#c0392b;color:#fff;}
-        .btn-clear:hover{background:#e74c3c;}
+        .action-row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;}
+        .btn-find{
+            background:linear-gradient(135deg,#c9a227,#e2c563);
+            color:#0a0a0a;
+            padding:16px 36px;font-size:1.05rem;
+            box-shadow:0 4px 20px rgba(201,162,39,0.25);
+            letter-spacing:0.3px;
+        }
+        .btn-find:hover{box-shadow:0 8px 35px rgba(201,162,39,0.4);transform:translateY(-2px);}
+        .btn-find .badge{
+            position:absolute;top:-8px;right:-8px;
+            background:#e74c3c;color:#fff;
+            font-size:.72rem;width:24px;height:24px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;font-weight:700;
+        }
+        .btn-clear{
+            background:rgba(231,76,60,0.15);
+            color:#e74c3c;
+            border:1px solid rgba(231,76,60,0.3);
+        }
+        .btn-clear:hover{background:rgba(231,76,60,0.25);}
+
+        /* ═══ SPINNER ═══ */
         .spinner-wrap{text-align:center;padding:50px 0;display:none;}
-        .spinner{width:50px;height:50px;border:5px solid #111;border-top:5px solid #e2b340;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+        .spinner{
+            width:50px;height:50px;
+            border:3px solid rgba(255,255,255,0.05);
+            border-top:3px solid #c9a227;
+            border-radius:50%;
+            animation:spin .8s linear infinite;
+            margin:0 auto 14px;
+        }
         @keyframes spin{to{transform:rotate(360deg);}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-        @keyframes modalIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
-        .main-section-title{font-size:1.5rem;font-weight:700;margin:36px 0 8px;padding-bottom:8px;border-bottom:3px solid #e2b340;display:flex;align-items:center;gap:10px;color:#eee;}
-        .main-section-title .icon{font-size:1.5rem;}
-        .flavor-section{margin:18px 0;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;background:#0a0a0a;}
-        .flavor-header{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;user-select:none;transition:background .2s;}
-        .flavor-header:hover{background:#111;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+
+        /* ═══ RESULTS SECTIONS ═══ */
+        .main-section-title{
+            font-family:'Playfair Display',serif;
+            font-size:1.5rem;font-weight:700;
+            margin:40px 0 12px;padding-bottom:10px;
+            border-bottom:1px solid rgba(201,162,39,0.3);
+            display:flex;align-items:center;gap:12px;
+            color:rgba(255,255,255,0.9);
+            letter-spacing:0.5px;
+        }
+        .main-section-title .icon{font-size:1.4rem;}
+        .flavor-section{
+            margin:18px 0;
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:16px;
+            overflow:hidden;
+            background:rgba(255,255,255,0.02);
+            backdrop-filter:blur(12px);
+        }
+        .flavor-header{
+            display:flex;align-items:center;gap:12px;
+            padding:16px 22px;
+            cursor:pointer;user-select:none;
+            transition:background .3s;
+        }
+        .flavor-header:hover{background:rgba(255,255,255,0.03);}
         .flavor-header .fl-emoji{font-size:1.3rem;}
-        .flavor-header .fl-title{font-size:1.05rem;font-weight:600;color:#e2b340;flex:1;}
-        .flavor-header .fl-count{font-size:.82rem;color:#666;margin-right:8px;}
-        .flavor-header .fl-arrow{font-size:1rem;color:#666;transition:transform .3s;}
+        .flavor-header .fl-title{
+            font-family:'Playfair Display',serif;
+            font-size:1.05rem;font-weight:600;
+            color:#e2c563;flex:1;
+            letter-spacing:0.3px;
+        }
+        .flavor-header .fl-count{font-size:.8rem;color:rgba(255,255,255,0.3);margin-right:10px;}
+        .flavor-header .fl-arrow{font-size:.9rem;color:rgba(255,255,255,0.3);transition:transform .3s;}
         .flavor-header .fl-arrow.open{transform:rotate(180deg);}
-        .flavor-body{padding:0 16px 16px;}
+        .flavor-body{padding:0 18px 18px;}
         .flavor-body.collapsed{display:none;}
-        .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;padding-top:8px;}
-        .card{background:#141414;border-radius:14px;overflow:hidden;border:1px solid #1e1e1e;animation:fadeIn .4s;transition:transform .25s,border-color .25s;cursor:pointer;}
-        .card:hover{transform:translateY(-4px);border-color:#e2b340;}
-        .card img{width:100%;height:180px;object-fit:cover;}
-        .card-body{padding:14px;}
-        .card-body h3{color:#e2b340;font-size:1rem;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+        /* ═══ COCKTAIL CARDS (Glassmorphism) ═══ */
+        .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;padding-top:10px;}
+        .card{
+            background:rgba(255,255,255,0.03);
+            border-radius:16px;
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,0.06);
+            animation:fadeIn .5s;
+            transition:all .4s cubic-bezier(.25,.8,.25,1);
+            cursor:pointer;
+            backdrop-filter:blur(12px);
+            -webkit-backdrop-filter:blur(12px);
+            position:relative;
+        }
+        .card::after{
+            content:'';
+            position:absolute;top:0;left:0;right:0;bottom:0;
+            border-radius:16px;
+            background:linear-gradient(135deg, rgba(201,162,39,0.0), rgba(201,162,39,0.0));
+            transition:background .4s;
+            pointer-events:none;
+        }
+        .card:hover{
+            transform:translateY(-6px);
+            border-color:rgba(201,162,39,0.3);
+            box-shadow:0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(201,162,39,0.08);
+        }
+        .card:hover::after{
+            background:linear-gradient(135deg, rgba(201,162,39,0.03), rgba(201,162,39,0.01));
+        }
+        .card img{width:100%;height:180px;object-fit:cover;transition:transform .5s;filter:brightness(0.95);}
+        .card:hover img{transform:scale(1.05);filter:brightness(1);}
+        .card-body{padding:16px;position:relative;z-index:1;}
+        .card-body h3{
+            color:#e2c563;
+            font-family:'Playfair Display',serif;
+            font-size:1rem;margin-bottom:8px;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            font-weight:600;
+        }
         .card-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
         .flavor-badge{font-size:.85rem;}
-        .diff-badge{font-size:.72rem;padding:2px 9px;border-radius:10px;font-weight:600;}
-        .badge-easy{background:#27ae60;color:#fff;}
-        .badge-medium{background:#e2b340;color:#000;}
-        .badge-advanced{background:#e74c3c;color:#fff;}
-        .ing-count{font-size:.78rem;color:#666;margin-left:auto;}
-        .no-results{text-align:center;padding:40px 20px;color:#555;font-size:1.05rem;}
-        /* ── Modal ── */
-        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.88);z-index:1000;justify-content:center;align-items:center;padding:20px;}
-        .modal-overlay.open{display:flex;}
-        .modal-card{background:#141414;border:1px solid #222;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn .3s ease;}
-        .modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);color:#eee;border:none;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:background .2s;}
-        .modal-close:hover{background:#e74c3c;}
-        .modal-img{width:100%;height:280px;object-fit:cover;border-radius:16px 16px 0 0;}
-        .modal-body{padding:24px;}
-        .modal-body h2{color:#e2b340;font-size:1.4rem;margin-bottom:4px;}
-        .modal-meta{font-size:.85rem;color:#666;margin-bottom:14px;}
-        .modal-meta span{margin-right:12px;}
-        .modal-body h4{font-size:.95rem;color:#ccc;margin:16px 0 8px;border-bottom:1px solid #222;padding-bottom:6px;}
-        .modal-ingredients{list-style:none;margin-bottom:6px;}
-        .modal-ingredients li{font-size:.9rem;padding:4px 0;color:#bbb;}
-        .modal-ingredients li::before{content:"• ";color:#e2b340;}
-        .modal-ingredients li.missing{color:#e74c3c;font-style:italic;}
-        .modal-ingredients li.missing::before{content:"✗ ";color:#e74c3c;}
-        .modal-steps{list-style:none;counter-reset:step;}
-        .modal-steps li{counter-increment:step;padding:6px 0;font-size:.88rem;color:#bbb;line-height:1.6;display:flex;gap:10px;}
-        .modal-steps li::before{content:counter(step);background:#e2b340;color:#000;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;margin-top:2px;}
-        @media(max-width:600px){
-            header h1{font-size:1.7rem;}
-            .cards{grid-template-columns:1fr;}
-            .spirit-btn{min-width:80px;padding:10px 12px;}
-            .spirit-btn .emoji{font-size:1.3rem;}
-            .modal-card{max-width:95%;}
-            .modal-img{height:200px;}
+        .diff-badge{font-size:.72rem;padding:3px 10px;border-radius:12px;font-weight:600;letter-spacing:0.3px;}
+        .badge-easy{background:rgba(39,174,96,0.2);color:#27ae60;border:1px solid rgba(39,174,96,0.3);}
+        .badge-medium{background:rgba(201,162,39,0.15);color:#e2c563;border:1px solid rgba(201,162,39,0.3);}
+        .badge-advanced{background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);}
+        .ing-count{font-size:.78rem;color:rgba(255,255,255,0.3);margin-left:auto;}
+        .no-results{text-align:center;padding:50px 20px;color:rgba(255,255,255,0.3);font-size:1.05rem;}
+
+        /* ═══ MODAL (Premium Glassmorphism) ═══ */
+        .modal-overlay{
+            display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+            background:rgba(0,0,0,0.85);
+            backdrop-filter:blur(8px);
+            z-index:1000;
+            justify-content:center;align-items:center;padding:20px;
         }
+        .modal-overlay.open{display:flex;}
+        .modal-card{
+            background:rgba(15,15,25,0.95);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:20px;
+            max-width:620px;width:100%;max-height:90vh;overflow-y:auto;
+            position:relative;animation:modalIn .4s cubic-bezier(.25,.8,.25,1);
+            backdrop-filter:blur(30px);
+            box-shadow:0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(201,162,39,0.05);
+        }
+        .modal-close{
+            position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
+            background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);
+            color:#eee;border:1px solid rgba(255,255,255,0.1);
+            font-size:1.1rem;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;z-index:10;
+            transition:all .3s;
+        }
+        .modal-close:hover{background:rgba(231,76,60,0.6);border-color:rgba(231,76,60,0.5);}
+        .modal-img{width:100%;height:300px;object-fit:cover;border-radius:20px 20px 0 0;}
+        .modal-body{padding:28px;}
+        .modal-body h2{
+            color:#e2c563;
+            font-family:'Playfair Display',serif;
+            font-size:1.5rem;margin-bottom:6px;
+            letter-spacing:0.5px;
+        }
+        .modal-meta{font-size:.85rem;color:rgba(255,255,255,0.35);margin-bottom:16px;}
+        .modal-meta span{margin-right:14px;}
+        .modal-body h4{
+            font-size:.88rem;color:rgba(255,255,255,0.5);
+            margin:20px 0 10px;
+            border-bottom:1px solid rgba(255,255,255,0.06);
+            padding-bottom:6px;
+            text-transform:uppercase;
+            letter-spacing:1px;
+            font-weight:600;
+        }
+        .modal-ingredients{list-style:none;margin-bottom:8px;}
+        .modal-ingredients li{font-size:.9rem;padding:5px 0;color:rgba(255,255,255,0.65);}
+        .modal-ingredients li::before{content:"• ";color:#c9a227;}
+        .modal-ingredients li.missing{color:#e74c3c;font-style:italic;}
+        .modal-ingredients li.missing::before{content:"\2717 ";color:#e74c3c;}
+        .modal-steps{list-style:none;counter-reset:step;}
+        .modal-steps li{
+            counter-increment:step;
+            padding:8px 0;font-size:.88rem;
+            color:rgba(255,255,255,0.6);
+            line-height:1.7;display:flex;gap:12px;
+        }
+        .modal-steps li::before{
+            content:counter(step);
+            background:linear-gradient(135deg,#c9a227,#e2c563);
+            color:#0a0a0a;
+            width:26px;height:26px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:.78rem;flex-shrink:0;margin-top:2px;
+        }
+
+        /* ═══ MODAL ACTIONS (Print/Export) ═══ */
+        .modal-actions{display:flex;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);}
+        .modal-actions .action-btn{
+            flex:1;padding:12px 18px;border:none;border-radius:12px;
+            font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;
+            cursor:pointer;transition:all .3s;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+        }
+        .modal-actions .btn-print{
+            background:linear-gradient(135deg,#c9a227,#e2c563);
+            color:#0a0a0a;
+            box-shadow:0 4px 15px rgba(201,162,39,0.2);
+        }
+        .modal-actions .btn-print:hover{box-shadow:0 6px 25px rgba(201,162,39,0.35);transform:translateY(-1px);}
+        .modal-actions .btn-export{
+            background:rgba(255,255,255,0.05);
+            color:rgba(255,255,255,0.7);
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        .modal-actions .btn-export:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);}
+
+        /* ═══ MOBILE RESPONSIVE ═══ */
+        @media(max-width:768px){
+            .side-watermark{display:none !important;}
+            .bokeh span:nth-child(n+6){display:none;}
+            .container{padding:16px 12px 88px;}
+            header{padding:28px 16px 22px;}
+            header h1{font-size:2rem;letter-spacing:2px;}
+            header p{font-size:.82rem;}
+            .spirits-grid{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;gap:8px;}
+            .spirits-grid::-webkit-scrollbar{display:none;}
+            .spirit-btn{padding:10px 18px;flex-shrink:0;border-radius:20px;}
+            .spirit-btn .label{font-size:.78rem;}
+            .ing-section{padding:16px 12px;border-radius:14px;}
+            .tab-btn{padding:10px 16px;font-size:.82rem;}
+            .chip{padding:5px 11px;font-size:.75rem;}
+            .chips{gap:6px;}
+            .cat-title{font-size:.72rem;}
+            .selected-bar{padding:14px 14px;border-radius:12px;}
+            .sel-tag{font-size:.75rem;padding:4px 10px;}
+            .action-row{position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,10,0.95);backdrop-filter:blur(20px);padding:12px 16px;z-index:50;border-top:1px solid rgba(201,162,39,0.2);margin:0;gap:10px;}
+            .btn-find{flex:1;padding:14px 20px;font-size:.95rem;border-radius:10px;}
+            .btn-clear{padding:14px 16px;font-size:.85rem;border-radius:10px;}
+            .step-header h2{font-size:1rem;}
+            .step-num{width:30px;height:30px;font-size:.85rem;}
+            .modal-card{max-width:100%;max-height:100%;border-radius:0;height:100%;}
+            .modal-overlay.open{padding:0;}
+            .modal-img{height:220px;border-radius:0;}
+            .modal-body{padding:18px;}
+            .modal-body h2{font-size:1.25rem;}
+            .modal-close{top:10px;right:10px;z-index:110;}
+            .cards{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}
+            .card{border-radius:12px;}
+            .card img{height:130px;}
+            .card-body{padding:12px;}
+            .card-body h3{font-size:.85rem;}
+            .main-section-title{font-size:1.2rem;margin:28px 0 8px;}
+            .flavor-header{padding:12px 14px;}
+            .flavor-header .fl-title{font-size:.92rem;}
+            .search-wrap input{padding:12px 16px;font-size:.9rem;border-radius:10px;}
+            .modal-actions{flex-direction:column;gap:8px;}
+        }
+        @media(min-width:1400px){
+            .container{position:relative;z-index:2;}
+            header{position:relative;z-index:2;}
+        }
+
+        /* ═══ CUSTOM SCROLLBAR ═══ */
+        ::-webkit-scrollbar{width:6px;}
+        ::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);}
+        ::-webkit-scrollbar-thumb{background:rgba(201,162,39,0.2);border-radius:3px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(201,162,39,0.35);}
     </style>
 </head>
 <body>
 
+<!-- Floating Bokeh Particles -->
+<div class="bokeh">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<!-- Side Watermarks -->
+<div class="side-watermark left"><div class="wm-text">Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart</div></div>
+<div class="side-watermark right"><div class="wm-text">Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart<br>Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart &middot; Landry Stewart</div></div>
+
 <header>
-    <h1>🍸 Cocktail Finder</h1>
+    <h1>Partini</h1>
     <p>Pick your spirits, choose your ingredients, and discover what you can mix!</p>
+    <div class="subtitle-line"></div>
 </header>
 
 <div class="container">
@@ -145,12 +581,12 @@
         </div>
         <div class="ing-section">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('browse')">📋 Browse &amp; Select</button>
-                <button class="tab-btn" onclick="switchTab('search')">🔎 Type to Search</button>
+                <button class="tab-btn active" onclick="switchTab('browse')">&#x1F4CB; Browse & Select</button>
+                <button class="tab-btn" onclick="switchTab('search')">&#x1F50E; Type to Search</button>
             </div>
             <div class="tab-content active" id="tab-browse"></div>
             <div class="tab-content" id="tab-search">
-                <p style="font-size:.88rem;color:#666;margin-bottom:12px;">Start typing — suggestions from the database will appear.</p>
+                <p style="font-size:.88rem;color:rgba(255,255,255,0.3);margin-bottom:12px;">Start typing — suggestions from the database will appear.</p>
                 <div class="search-wrap">
                     <input type="text" id="searchInput" placeholder="e.g. Elderflower, Passion Fruit…" autocomplete="off">
                     <div class="autocomplete-list" id="acList"></div>
@@ -161,19 +597,19 @@
 
     <!-- Selected Summary -->
     <div class="selected-bar">
-        <div class="selected-label">🧾 Selected Ingredients</div>
+        <div class="selected-label">Selected Ingredients</div>
         <div class="selected-tags" id="selectedTags"><span class="no-ing">None selected yet — pick some above!</span></div>
     </div>
 
     <!-- Actions -->
     <div class="action-row">
-        <button class="btn btn-find" id="findBtn" onclick="findCocktails()">🔍 Find Cocktails <span class="badge" id="countBadge" style="display:none">0</span></button>
-        <button class="btn btn-clear" onclick="clearAll()">🗑️ Clear All</button>
+        <button class="btn btn-find" id="findBtn" onclick="findCocktails()">&#x1F50D; Find Cocktails <span class="badge" id="countBadge" style="display:none">0</span></button>
+        <button class="btn btn-clear" onclick="clearAll()">&#x1F5D1;&#xFE0F; Clear All</button>
     </div>
 
     <div class="spinner-wrap" id="spinner">
         <div class="spinner"></div>
-        <p>Searching cocktail recipes…</p>
+        <p style="color:rgba(255,255,255,0.35);">Searching cocktail recipes…</p>
     </div>
 
     <div id="results"></div>
@@ -188,6 +624,7 @@
 </div>
 
 <script>
+
 /* ═══════════════════════════════════════
    HARDCODED LOCAL COCKTAIL DATABASE
    ═══════════════════════════════════════ */
@@ -304,6 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderBrowseGrid();
     fetchIngredientList();
     setupAutocomplete();
+    fetchLocalImages();
 });
 
 async function fetchIngredientList() {
@@ -316,13 +754,28 @@ async function fetchIngredientList() {
     } catch(e) { console.warn('Could not fetch ingredient list', e); }
 }
 
+async function fetchLocalImages() {
+    for (const drink of LOCAL_DB) {
+        if (!drink.img || drink.img === '') {
+            try {
+                const cleanName = drink.name.replace(/\s*\(.*\)\s*/g, '').trim();
+                const res = await fetch(`${API}/search.php?s=${encodeURIComponent(cleanName)}`);
+                const data = await res.json();
+                if (data.drinks && data.drinks[0] && data.drinks[0].strDrinkThumb) {
+                    drink.img = data.drinks[0].strDrinkThumb;
+                }
+            } catch(e) { /* skip */ }
+        }
+    }
+}
+
+
 /* ═══════════════════════════════════════
    SPIRITS
    ═══════════════════════════════════════ */
 function renderSpirits() {
     document.getElementById('spiritsGrid').innerHTML = SPIRITS.map(s => `
         <div class="spirit-btn" data-name="${s.name}" onclick="toggleSpirit(this,'${s.name}')">
-            <span class="emoji">${s.emoji}</span>
             <span class="label">${s.name}</span>
         </div>`).join('');
 }
@@ -536,7 +989,13 @@ async function findCocktails() {
                 source: 'local'
             };
             if (missing.length === 0) fullMatch.push(obj);
-            else almostMatch.push(obj);
+            else {
+                const spiritNames = SPIRITS.map(s => s.name.toLowerCase());
+                const selSpirits = [...selected].filter(s => spiritNames.includes(s.toLowerCase()));
+                if (selSpirits.length === 0 || drink.ingredients.some(di => selSpirits.some(sp => di.name.toLowerCase().includes(sp.toLowerCase()) || sp.toLowerCase().includes(di.name.toLowerCase())))) {
+                    almostMatch.push(obj);
+                }
+            }
         }
     }
 
@@ -590,7 +1049,13 @@ async function findCocktails() {
                         source: 'api'
                     };
                     if (missing.length === 0) fullMatch.push(obj);
-                    else almostMatch.push(obj);
+                    else {
+                        const spiritNames = SPIRITS.map(s => s.name.toLowerCase());
+                        const selSpirits = [...selected].filter(s => spiritNames.includes(s.toLowerCase()));
+                        if (selSpirits.length === 0 || drinkIngredients.some(di => selSpirits.some(sp => di.name.toLowerCase().includes(sp.toLowerCase()) || sp.toLowerCase().includes(di.name.toLowerCase())))) {
+                            almostMatch.push(obj);
+                        }
+                    }
                 }
             });
         }
@@ -620,9 +1085,15 @@ async function findCocktails() {
         html += `<div class="main-section-title"><span class="icon">✅</span> You Can Make (${dedupFull.length})</div>`;
         html += buildFlavorSections(dedupFull, 'full');
     }
-    if (dedupAlmost.length > 0) {
-        html += `<div class="main-section-title"><span class="icon">🟡</span> Almost There (${dedupAlmost.length})</div>`;
-        html += buildFlavorSections(dedupAlmost, 'almost');
+    const need1 = dedupAlmost.filter(c => c.missing.length === 1);
+    const need2 = dedupAlmost.filter(c => c.missing.length === 2);
+    if (need1.length > 0) {
+        html += `<div class="main-section-title"><span class="icon">🟠</span> Need 1 More Ingredient (${need1.length})</div>`;
+        html += buildFlavorSections(need1, 'need1');
+    }
+    if (need2.length > 0) {
+        html += `<div class="main-section-title"><span class="icon">🔴</span> Need 2 More Ingredients (${need2.length})</div>`;
+        html += buildFlavorSections(need2, 'need2');
     }
     if (dedupFull.length === 0 && dedupAlmost.length === 0) {
         html = '<div class="no-results">😕 No cocktails found. Try adding more ingredients!</div>';
@@ -650,9 +1121,9 @@ function buildFlavorSections(cocktails, prefix) {
                 <span class="fl-emoji">${profile.emoji}</span>
                 <span class="fl-title">${profile.title}</span>
                 <span class="fl-count">${list.length} cocktail${list.length > 1 ? 's' : ''}</span>
-                <span class="fl-arrow open" id="fa-${uid}">▼</span>
+                <span class="fl-arrow" id="fa-${uid}">▼</span>
             </div>
-            <div class="flavor-body" id="fb-${uid}">
+            <div class="flavor-body collapsed" id="fb-${uid}">
                 <div class="cards">
                     ${list.map(c => {
                         const idx = allResults.indexOf(c);
@@ -718,10 +1189,76 @@ function openModal(index) {
             <ul class="modal-ingredients">${ingHTML}</ul>
             <h4>📝 Instructions</h4>
             <ol class="modal-steps">${stepsHTML}</ol>
+            <div class="modal-actions">
+                <button class="action-btn btn-print" onclick="printRecipe(${index})"><span>🖨️</span> Print Recipe</button>
+                <button class="action-btn btn-export" onclick="exportRecipe(${index})"><span>📥</span> Export Recipe</button>
+            </div>
         </div>`;
 
     document.getElementById('modal').classList.add('open');
     document.body.style.overflow = 'hidden';
+}
+
+
+function printRecipe(index) {
+    const c = allResults[index];
+    if (!c) return;
+    const d = c.drink;
+    const fp = getProfile(c.flavor);
+    const ingList = c.drinkIngredients.map(di => `<li>${di.measure ? di.measure + ' ' : ''}${di.name}</li>`).join('');
+    const stepsList = c.steps.map((s, i) => `<li>${s}</li>`).join('');
+    const printHTML = `<!DOCTYPE html><html><head><title>${d.strDrink} - Partini Recipe</title><style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Georgia',serif;max-width:600px;margin:0 auto;padding:40px 30px;color:#222;}
+        h1{font-size:28px;margin-bottom:4px;color:#333;border-bottom:3px solid #c9a227;padding-bottom:8px;}
+        .meta{font-size:13px;color:#888;margin:8px 0 20px;display:flex;gap:16px;}
+        h2{font-size:16px;margin:20px 0 8px;color:#555;text-transform:uppercase;letter-spacing:1px;}
+        ul,ol{margin-left:24px;margin-bottom:12px;}
+        li{font-size:14px;line-height:1.8;color:#333;}
+        .footer{margin-top:30px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#aaa;text-align:center;}
+        @media print{body{padding:20px;}}
+    </style></head><body>
+        <h1>${d.strDrink}</h1>
+        <div class="meta"><span>${fp.emoji} ${fp.title}</span><span>🍸 ${d.strGlass || 'Glass'}</span><span>${c.difficulty}</span></div>
+        <h2>Ingredients</h2>
+        <ul>${ingList}</ul>
+        <h2>Instructions</h2>
+        <ol>${stepsList}</ol>
+        <div class="footer">Recipe from Partini</div>
+    </body></html>`;
+    const win = window.open('', '_blank');
+    win.document.write(printHTML);
+    win.document.close();
+    setTimeout(() => win.print(), 400);
+}
+
+function exportRecipe(index) {
+    const c = allResults[index];
+    if (!c) return;
+    const d = c.drink;
+    const fp = getProfile(c.flavor);
+    let text = '';
+    text += '='.repeat(40) + '\n';
+    text += '  ' + d.strDrink + '\n';
+    text += '='.repeat(40) + '\n\n';
+    text += 'Category: ' + fp.emoji + ' ' + fp.title + '\n';
+    text += 'Glass: ' + (d.strGlass || 'N/A') + '\n';
+    text += 'Difficulty: ' + c.difficulty + '\n\n';
+    text += '-- Ingredients --\n';
+    c.drinkIngredients.forEach(di => { text += '  * ' + (di.measure ? di.measure + ' ' : '') + di.name + '\n'; });
+    text += '\n-- Instructions --\n';
+    c.steps.forEach((s, i) => { text += '  ' + (i + 1) + '. ' + s + '\n'; });
+    text += '\n' + '-'.repeat(40) + '\n';
+    text += 'Recipe from Partini\n';
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = d.strDrink.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ +/g, '_') + '_recipe.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 function closeModal() {
@@ -730,6 +1267,7 @@ function closeModal() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
 </script>
 </body>
 </html>
